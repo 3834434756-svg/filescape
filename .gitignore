@@ -1,0 +1,29 @@
+# XcodeGen 生成物 —— 不进版本库，CI 上现生成
+*.xcodeproj/
+*.xcworkspace/
+
+# Xcode
+build/
+DerivedData/
+*.xcarchive
+*.ipa
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+
+# 签名材料 —— 永远不要提交
+*.p12
+*.cer
+*.mobileprovision
+*.key
