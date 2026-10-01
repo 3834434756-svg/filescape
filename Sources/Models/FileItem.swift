@@ -50,14 +50,13 @@ struct FileItem: Identifiable, Hashable {
         self.url = url
         self.name = values?.name ?? url.lastPathComponent
         self.isDirectory = isDir
-        self.size = Int64(values?.fileSize ?? 0)
         self.modified = values?.contentModificationDate ?? Date(timeIntervalSince1970: 0)
         self.kind = FileKind.detect(url: url, isDirectory: isDir)
-
-        // 目录大小拿不到 fileSize，递归统计一次（限制深度，避免卡顿）
-        if isDir {
-            self.size = FileItem.directorySize(url: url, depth: 0)
-        }
+        // 目录拿不到有意义的 fileSize，递归统计一次（限制深度避免卡顿）。
+        // 这里必须在初始化时一次算完 —— `size` 是 let，不能先赋默认值再覆盖。
+        self.size = isDir
+            ? FileItem.directorySize(url: url, depth: 0)
+            : Int64(values?.fileSize ?? 0)
     }
 
     private static func directorySize(url: URL, depth: Int) -> Int64 {
