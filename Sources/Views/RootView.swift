@@ -93,6 +93,9 @@ struct RootView: View {
         .padding(.bottom, 10)
     }
 
+    // 这个属性返回"搜索框 + 取消按钮"两个平级视图，交给外层 HStack 排布，
+    // 所以必须标 @ViewBuilder —— 否则 some View 的计算属性只能有一个顶层表达式。
+    @ViewBuilder
     private var searchField: some View {
         HStack(spacing: 9) {
             Image(systemName: "magnifyingglass")

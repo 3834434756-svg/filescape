@@ -58,8 +58,12 @@ jobs:
 
       - name: 归档（未签名）
         run: |
-          set -e
-          xcodebuild archive \
+          # pipefail 必须有：只要 xcodebuild 失败，整条管道就要失败。
+          # 之前写成 `xcodebuild ... | tee log | tail -40`，退出码取的是 tail 的，
+          # 编译挂了这一步还显示成功，直到下一步找不到 .app 才报错，误导排查方向。
+          set -eo pipefail
+
+          if ! xcodebuild archive \
             -project "$PROJECT" \
             -scheme "$SCHEME" \
             -configuration Release \
@@ -69,8 +73,18 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_ENTITLEMENTS="" \
-            | tee "$RUNNER_TEMP/archive.log" \
-            | tail -40
+            > "$RUNNER_TEMP/archive.log" 2>&1
+          then
+            echo "===== 归档失败，错误摘要 ====="
+            grep -E "error:|❌|ARCHIVE FAILED" "$RUNNER_TEMP/archive.log" | head -40 || true
+            echo
+            echo "===== 日志末尾 80 行 ====="
+            tail -80 "$RUNNER_TEMP/archive.log"
+            exit 1
+          fi
+
+          echo "归档成功"
+          tail -5 "$RUNNER_TEMP/archive.log"
 
       - name: 打包成 IPA
         run: |
